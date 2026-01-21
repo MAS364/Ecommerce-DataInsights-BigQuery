@@ -1,1 +1,38 @@
+-- Query 1: Top 10 Most Profitable Products
+SELECT
+  p.name AS product_name,
+  p.brand AS brand,
+  p.department AS department,
+  COUNT(oi.id) AS units_sold,
+  ROUND(SUM(oi.sale_price), 2) AS total_revenue,
+  ROUND(SUM(oi.sale_price - p.cost), 2) AS total_profit
+FROM `bigquery-public-data.thelook_ecommerce.order_items` oi
+JOIN `bigquery-public-data.thelook_ecommerce.products` p
+  ON oi.product_id = p.id
+WHERE
+  oi.status IN ('Complete', 'Shipped')
+  AND oi.returned_at IS NULL
+GROUP BY product_name, brand, department
+ORDER BY total_profit DESC
+LIMIT 10;
+
+-- Query 2: Top-Selling Units by Distribution Center
+SELECT
+  dc.name AS distribution_center,
+  dc.state AS state,
+  p.name AS product_name,
+  p.department AS department,
+  p.brand AS brand,
+  COUNT(oi.id) AS total_units_sold
+FROM `bigquery-public-data.thelook_ecommerce.order_items` oi
+JOIN `bigquery-public-data.thelook_ecommerce.products` p
+  ON oi.product_id = p.id
+JOIN `bigquery-public-data.thelook_ecommerce.distribution_centers` dc
+  ON p.distribution_center_id = dc.id
+WHERE
+  oi.status IN ('Complete', 'Shipped')
+  AND oi.returned_at IS NULL
+GROUP BY distribution_center, state, product_name, department, brand
+ORDER BY total_units_sold DESC
+LIMIT 10;
 
