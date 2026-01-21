@@ -1,1 +1,163 @@
+/* --------------------------------------------------
+   Global Reset
+-------------------------------------------------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* --------------------------------------------------
+   Page Layout
+-------------------------------------------------- */
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #faf9f6;
+  color: #1f1f1f;
+}
+
+/* Container */
+.container {
+  min-height: 100vh;
+  text-align: center;
+  padding: 40px 20px 60px;
+}
+
+/* --------------------------------------------------
+   Headings
+-------------------------------------------------- */
+h1 {
+  color: #443c68;
+  font-size: 2.8rem;
+  font-weight: 800;
+  margin-bottom: 30px;
+}
+
+h2 {
+  color: #443c68;
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 25px 0 18px;
+}
+
+/* --------------------------------------------------
+   Query Form (Dropdown + Button)
+-------------------------------------------------- */
+.query-form {
+  margin: 10px auto 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap; /* mobile friendly */
+}
+
+/* Dropdown */
+.query-form select {
+  min-width: 340px;
+  padding: 12px 16px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #d5d5dd;
+  background-color: #ffffff;
+  color: #2a2a2a;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.query-form select:focus {
+  border-color: #443c68;
+  box-shadow: 0 0 0 3px rgba(68, 60, 104, 0.15);
+}
+
+/* Button */
+.query-form button {
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 12px 28px;
+  cursor: pointer;
+  background-color: #e63946;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  transition: background-color 0.25s ease, transform 0.1s ease;
+}
+
+.query-form button:hover {
+  background-color: #a62832;
+  transform: translateY(-1px);
+}
+
+.query-form button:active {
+  transform: translateY(0);
+}
+
+/* --------------------------------------------------
+   Table Styling
+-------------------------------------------------- */
+table {
+  width: 92%;
+  max-width: 980px;
+  margin: 0 auto;
+  border-collapse: collapse;
+  text-align: left;
+  background-color: #ffffff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+}
+
+thead tr {
+  background-color: #443c68;
+  color: #ffffff;
+}
+
+thead th {
+  padding: 14px 16px;
+  font-size: 0.95rem;
+  letter-spacing: 0.2px;
+}
+
+tbody td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #ececf1;
+  font-size: 0.95rem;
+}
+
+/* zebra rows */
+tbody tr:nth-child(even) {
+  background-color: #f3f3f7;
+}
+
+/* hover row */
+tbody tr:hover {
+  background-color: #e9e9f2;
+}
+
+/* --------------------------------------------------
+   Error Message
+-------------------------------------------------- */
+.error {
+  margin-top: 20px;
+  color: #d62828;
+  font-weight: 700;
+}
+
+/* --------------------------------------------------
+   Responsive
+-------------------------------------------------- */
+@media (max-width: 480px) {
+  h1 {
+    font-size: 2.1rem;
+  }
+
+  .query-form select {
+    min-width: 260px;
+    width: 90%;
+  }
+
+  table {
+    width: 96%;
+  }
+}
 
