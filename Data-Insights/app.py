@@ -1,84 +1,138 @@
-import os
-from flask import Flask, render_template, request
+from flask import Flask, render_template_string, request
 from google.cloud import bigquery
+import os
 
 app = Flask(__name__)
+client = bigquery.Client()
 
-# Cloud Run: service account provides auth automatically.
-# Local: set GOOGLE_APPLICATION_CREDENTIALS to a service account JSON.
-PROJECT_ID = os.getenv("PROJECT_ID")  # optional
-client = bigquery.Client(project=PROJECT_ID)
+HTML_TEMPLATE = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BigQuery on Cloud Run</title>
+    <style>
+        table { border-collapse: collapse; width: 90%; margin-top: 20px;}
+        th, td { border: 1px solid #ddd; padding: 8px;}
+        th { background-color: #f2f2f2; }
+        button { margin-right: 10px; padding: 10px 20px; }
+    </style>
+</head>
+<body>
+    <h1>BigQuery Cloud Run Demo</h1>
+    <form method="post">
+        <button type="submit" name="query" value="1">Query 1</button>
+        <button type="submit" name="query" value="2">Query 2</button>
+    </form>
+    {% if columns and rows %}
+        <table>
+            <thead>
+                <tr>{% for col in columns %}<th>{{ col }}</th>{% endfor %}</tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    {% for cell in row %}
+                    <td>{{ cell }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% elif error %}
+        <p style="color:red;">{{ error }}</p>
+    {% endif %}
+</body>
+</html>
+"""
 
+# Your SQL queries
+QUERY_1 = """
+SELECT 
+  OI.product_id,
+  P.name,
+  P.brand,
+  P.category,
+  COUNT(OI.order_id) AS total_units_sold,
+  ROUND(SUM(OI.sale_price),2) AS total_revenue,
+  ROUND(SUM(OI.sale_price - P.cost),2) AS total_profit
+FROM 
+  `bigquery-public-data.thelook_ecommerce.order_items` AS OI
+JOIN
+  `bigquery-public-data.thelook_ecommerce.orders` AS O
+  ON OI.order_id = O.order_id
+JOIN
+  `bigquery-public-data.thelook_ecommerce.products` AS P
+  ON OI.product_id = P.id
+WHERE
+  OI.returned_at IS NULL 
+  AND OI.status IN ('Complete','Shipped')
+GROUP BY 
+  OI.product_id,
+  P.name,
+  P.brand,
+  P.category
+ORDER BY 
+  total_profit DESC
+LIMIT 10
+"""
 
-def load_sql(path: str) -> str:
-    with open(path, "r", encoding="utf-8") as f:
-        return f.read()
+QUERY_2 = """
+SELECT 
+   II.product_distribution_center_id,
+   P.brand,
+   P.department,
+   P.name,
+  COUNT(OI.order_id) AS total_units_sold
+FROM 
+  `bigquery-public-data.thelook_ecommerce.order_items` AS OI
+JOIN 
+  `bigquery-public-data.thelook_ecommerce.inventory_items` AS II
+  ON OI.product_id = II.product_id
+JOIN 
+  `bigquery-public-data.thelook_ecommerce.products` AS P 
+  ON OI.product_id = P.id
+WHERE
+  OI.returned_at IS NULL
+  AND OI.status IN ('Complete', 'Shipped')
+GROUP BY
+   II.product_distribution_center_id,
+   P.brand,
+   P.department,
+   P.name
+ORDER BY
+  total_units_sold DESC
+LIMIT 10
+"""
 
-
-QUERY_1_SQL = load_sql("sql/query_1_top_profit_products.sql")
-QUERY_2_SQL = load_sql("sql/query_2_top_selling_by_distribution_center.sql")
-
-
-def run_query(sql: str, limit: int) -> list[dict]:
-    job_config = bigquery.QueryJobConfig(
-        query_parameters=[bigquery.ScalarQueryParameter("limit", "INT64", limit)]
-    )
-    rows = client.query(sql, job_config=job_config).result()
-    return [dict(r) for r in rows]
-
-
-@app.route("/", methods=["GET"])
+@app.route('/', methods=['GET', 'POST'])
 def home():
-    return render_template(
-        "index.html",
-        results=None,
-        error=None,
-        selected_query=None,
-        limit=10,
-    )
+    columns = []
+    rows = []
+    error = None
 
+    if request.method == 'POST':
+        query_num = request.form.get('query')
+        try:
+            if query_num == '1':
+                query = QUERY_1
+            elif query_num == '2':
+                query = QUERY_2
+            else:
+                error = "Invalid query selection."
+                return render_template_string(HTML_TEMPLATE, columns=None, rows=None, error=error)
 
-@app.route("/run", methods=["POST"])
-def run():
-    selected_query = request.form.get("query", "q1")
+            query_job = client.query(query)
+            result = query_job.result()
 
-    # limit from UI (default 10; clamp 1–100)
-    try:
-        limit = int(request.form.get("limit", "10"))
-    except ValueError:
-        limit = 10
-    limit = max(1, min(limit, 100))
+            columns = result.schema
+            columns = [field.name for field in columns]
+            rows = [list(row.values()) for row in result]
 
-    try:
-        if selected_query == "q1":
-            results = run_query(QUERY_1_SQL, limit)
-            title = "Query 1 – Top Profit Products"
-        elif selected_query == "q2":
-            results = run_query(QUERY_2_SQL, limit)
-            title = "Query 2 – Top-Selling Units by Distribution Center"
-        else:
-            raise ValueError("Invalid query selection.")
+        except Exception as e:
+            error = f"Error running query: {e}"
 
-        return render_template(
-            "index.html",
-            results=results,
-            error=None,
-            selected_query=selected_query,
-            limit=limit,
-            results_title=title,
-        )
+    return render_template_string(HTML_TEMPLATE, columns=columns, rows=rows, error=error)
 
-    except Exception as e:
-        return render_template(
-            "index.html",
-            results=None,
-            error=str(e),
-            selected_query=selected_query,
-            limit=limit,
-        )
-
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", "8080"))
-    app.run(host="0.0.0.0", port=port, debug=True)
-
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port)
