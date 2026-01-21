@@ -3,72 +3,59 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BigQuery Cloud Run (B5)</title>
+  <title>Look E-commerce Data Insights</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-  <div class="page">
-    <header class="header">
-      <h1 class="title">BigQuery Analytics (Cloud Run)</h1>
-      <p class="subtitle">
-        Run one of two fixed queries on the public <code>thelook_ecommerce</code> dataset.
-      </p>
-      <p class="subtitle">
-        Live service: <a href="https://task-b-cloud-run-1023861211173.europe-west2.run.app/" target="_blank" rel="noopener">Open Cloud Run URL</a>
-      </p>
-    </header>
 
-    <main class="card">
-      <form method="POST" action="/run" class="form">
-        <label class="label" for="limit">Rows to return (1–100)</label>
-        <input id="limit" class="input" type="number" name="limit" min="1" max="100" value="{{ limit or 10 }}" />
+  <div class="container">
 
-        <div class="btn-row">
-          <button class="btn" type="submit" name="query" value="q1">
-            Run Query 1: Top Profit Products
-          </button>
+    <!-- Main Title -->
+    <h1>Look E-commerce Data Insights</h1>
 
-          <button class="btn" type="submit" name="query" value="q2">
-            Run Query 2: Top-Selling Units by Distribution Center
-          </button>
-        </div>
+    <!-- Dropdown + Run Button -->
+    <form method="post" class="query-form">
+      <select name="query" required>
+        <option value="" disabled selected>Select a query</option>
+        <option value="top_products">Top 10 Products by Profit</option>
+        <option value="top_centers">Top 10 Distribution Centers by Units Sold</option>
+      </select>
 
-        {% if error %}
-          <div class="alert">Error: {{ error }}</div>
-        {% endif %}
-      </form>
+      <button type="submit">Run Query</button>
+    </form>
 
-      {% if results %}
-        <hr class="hr" />
-        <h2 class="block-title">{{ results_title }}</h2>
+    <!-- Selected Query Heading -->
+    {% if heading %}
+      <h2>{{ heading }}</h2>
+    {% endif %}
 
-        <div class="table-wrap">
-          <table class="table">
-            <thead>
-              <tr>
-                {% for k in results[0].keys() %}
-                  <th>{{ k }}</th>
-                {% endfor %}
-              </tr>
-            </thead>
-            <tbody>
-              {% for row in results %}
-                <tr>
-                  {% for v in row.values() %}
-                    <td>{{ v }}</td>
-                  {% endfor %}
-                </tr>
+    <!-- Results -->
+    {% if columns and rows %}
+      <table>
+        <thead>
+          <tr>
+            {% for col in columns %}
+              <th>{{ col }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for row in rows %}
+            <tr>
+              {% for cell in row %}
+                <td>{{ cell }}</td>
               {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      {% endif %}
-    </main>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
 
-    <footer class="footer">
-      <p class="muted">Dataset: bigquery-public-data.thelook_ecommerce</p>
-    </footer>
+    {% elif error %}
+      <p class="error">{{ error }}</p>
+    {% endif %}
+
   </div>
+
 </body>
 </html>
-
