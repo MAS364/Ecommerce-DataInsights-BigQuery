@@ -13,6 +13,10 @@ The application is deployed on Google Cloud Run and is accessible here:
 
 🔗 https://task-b-cloud-run-1023861211173.europe-west2.run.app/
 
+Dashboard:
+
+🔗 https://datastudio.google.com/u/0/reporting/a094a2c8-bbcc-49d8-91a1-51b846bd13d0/page/tkwdF
+
 ---
 
 ## Business Aim
