@@ -59,13 +59,25 @@ https://task-b-cloud-run-1023861211173.europe-west2.run.app/
 Dashboard:
 https://datastudio.google.com/u/0/reporting/a094a2c8-bbcc-49d8-91a1-51b846bd13d0/page/tkwdF
 
+
 ---
 
 ## 📈 Result
 - Real-time execution of SQL analytics on large-scale dataset  
 - Successfully generated product and logistics insights  
 - Reduced manual analysis time through automated querying system  
-- Delivered interactive business intelligence dashboard  
+- Delivered interactive business intelligence dashboard
+
+
+<img width="617" height="488" alt="Screenshot 2026-06-08 at 01 31 24" src="https://github.com/user-attachments/assets/29857da4-385d-4488-9438-ddead4141256" />
+<img width="549" height="776" alt="Screenshot 2026-06-08 at 01 31 38" src="https://github.com/user-attachments/assets/5a6b691d-68fc-4857-930e-e40861214cba" />
+
+
+
+
+
+
+
 
 ---
 
